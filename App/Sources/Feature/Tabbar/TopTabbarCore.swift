@@ -3,7 +3,7 @@ import Dependencies
 
 public struct TopTabbar: Reducer {
 
-    public enum Action: Equatable, BindableAction {
+    public enum Action: BindableAction {
         case onAppear
         case moveMaleTab(Person.Action)
         case moveFemaleTab(Person.Action)

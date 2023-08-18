@@ -42,6 +42,7 @@ public struct PersonView: View {
                             PersonCellView(entity: result) {
                                 viewStore.send(.setDetailPicture(pictureURL: result.picture))
                             }
+                            .onLongPressGesture { viewStore.send(.longTapCell(result)) }
                         }
                     }
                     .listStyle(.plain)
@@ -56,6 +57,7 @@ public struct PersonView: View {
                                 PersonGridView(entity: result) {
                                     viewStore.send(.setDetailPicture(pictureURL: result.picture))
                                 }
+                                .onLongPressGesture { viewStore.send(.longTapCell(result)) }
                             }
                         }
                         .padding(.horizontal, 16)
@@ -65,21 +67,11 @@ public struct PersonView: View {
                     }
                 }
             }
+            .alert(store: self.store.scope(state: \.$alert, action: { .alert($0) }))
             .fullScreenCover(
-                isPresented: viewStore.binding(
-                    get: \.isSheetPresented,
-                    send: Person.Action.setSheet(isPresented:)
-                )
-            ) {
-                IfLetStore(
-                    self.store.scope(
-                        state: returningLastNonNilValue { $0.personDetail },
-                        action: Person.Action.personDetail
-                    )
-                ) {
-                    PersonDetailView(store: $0)
-                }
-            }
+                store: store.scope(state: \.$personDetail, action: Person.Action.personDetail),
+                content: PersonDetailView.init(store: )
+            )
             .task {
                 viewStore.send(.onAppear)
             }

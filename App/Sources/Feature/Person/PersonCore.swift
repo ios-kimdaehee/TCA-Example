@@ -9,24 +9,32 @@ public struct Person: Reducer {
 
     @Dependency(\.humanDataSource) var humanDataSource
 
-    public enum Action: Equatable {
-        case onAppear
-        case tapIsCellButton(String)
-        case personListResponse(TaskResult<[HumanResultEntity]>)
-        case personDetail(PersonDetail.Action)
-        case setDetailPicture(pictureURL: URL?)
-        case setSheet(isPresented: Bool)
-    }
-
     public struct State: Equatable {
+        @PresentationState var personDetail: PersonDetail.State?
+        @PresentationState var alert: AlertState<Action.Alert>?
+
         var isSheetPresented = false
         var isCell = UserDefaults.standard.string(forKey: "isCell") ?? "1단"
         var pictueURL: URL?
-        var personDetail: PersonDetail.State?
         var gender: GenderEntity = .male
+        var wollRemoveEntity: HumanResultEntity?
         var humanResult: [HumanResultEntity] = []
         var page = 1
         var results = 15
+    }
+
+    public enum Action: Equatable {
+        case onAppear
+        case tapIsCellButton(String)
+        case setDetailPicture(pictureURL: URL?)
+        case longTapCell(HumanResultEntity)
+        case personListResponse(TaskResult<[HumanResultEntity]>)
+        case personDetail(PresentationAction<PersonDetail.Action>)
+        case alert(PresentationAction<Alert>)
+
+        public enum Alert: Equatable {
+          case removeButtonTaped(HumanResultEntity)
+        }
     }
 
     public init(gender: GenderEntity) {
@@ -61,29 +69,42 @@ public struct Person: Reducer {
 
                 case .setDetailPicture(let pictureURL):
                     state.pictueURL = pictureURL
-                    return .run { send in
-                        await send(.setSheet(isPresented: true))
+                    state.personDetail = PersonDetail.State(pictureURL: state.pictueURL)
+                    return .none
+
+                case .longTapCell(let entity):
+                    print(entity)
+                    state.alert = AlertState {
+                        TextState("정말로 이 항목을 삭제하시겠습니까?")
+                    } actions: {
+                        ButtonState(
+                            role: .destructive,
+                            action: .send(.removeButtonTaped(entity), animation: .default)
+                        ) {
+                            TextState("삭제")
+                        }
+                        ButtonState(role: .cancel) {
+                            TextState("취소")
+                        }
                     }
+                    return .none
+
+                case .alert(.presented(.removeButtonTaped(let entity))):
+                    if let firstIndex = state.humanResult.firstIndex(of: entity) {
+                        state.humanResult.remove(at: firstIndex)
+                    }
+                    return .cancel(id: CancelID.load)
 
                 case .personListResponse(.success(let response)):
                     state.humanResult = response
                     return .none
 
-                case .setSheet(isPresented: true):
-                    state.isSheetPresented = true
-                    state.personDetail = PersonDetail.State(pictureURL: state.pictueURL)
-                    return .cancel(id: CancelID.load)
-
-                case .setSheet(isPresented: false):
-                    state.isSheetPresented = false
-                    state.personDetail = nil
-                    return .cancel(id: CancelID.load)
-
                 default:
                     return .none
             }
         }
-        .ifLet(\.personDetail, action: /Action.personDetail) {
+        .ifLet(\.$alert, action: /Action.alert)
+        .ifLet(\.$personDetail, action: /Action.personDetail) {
             PersonDetail()
         }
     }
