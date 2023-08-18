@@ -14,8 +14,6 @@ extension Results {
             location: location.country,
             email: email,
             userName: login.username,
-            dob: DobEntity(date: dob.date, age: dob.age),
-            registered: DobEntity(date: registered.date, age: registered.age),
             phone: phone,
             cell: cell,
             id: id.name + name.title + name.last + email, // 고유한 값을 나오게 하기 위함

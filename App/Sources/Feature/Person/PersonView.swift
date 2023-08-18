@@ -36,20 +36,20 @@ public struct PersonView: View {
                     Spacer()
                 }
                 if viewStore.isCell == "1단" {
-                    List(viewStore.humanResult) { result in
-                        Button {
-                        } label: {
-                            PersonCellView(entity: result) {
-                                viewStore.send(.setDetailPicture(pictureURL: result.picture))
+                    ScrollView {
+                        LazyVStack {
+                            ForEach(viewStore.humanResult, id: \.self) { result in
+                                PersonCellView(entity: result) {
+                                    viewStore.send(.setDetailPicture(pictureURL: result.picture))
+                                }
+                                .onTapGesture {}
+                                .onLongPressGesture { viewStore.send(.longTapCell(result)) }
                             }
-                            .onLongPressGesture { viewStore.send(.longTapCell(result)) }
+                            .refreshable {
+                                viewStore.send(.onAppear)
+                            }
                         }
                     }
-                    .listStyle(.plain)
-                    .refreshable {
-                        viewStore.send(.onAppear)
-                    }
-
                 } else {
                     ScrollView {
                         LazyVGrid(columns: columns) {
@@ -57,6 +57,7 @@ public struct PersonView: View {
                                 PersonGridView(entity: result) {
                                     viewStore.send(.setDetailPicture(pictureURL: result.picture))
                                 }
+                                .onTapGesture {}
                                 .onLongPressGesture { viewStore.send(.longTapCell(result)) }
                             }
                         }
