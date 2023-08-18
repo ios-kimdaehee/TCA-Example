@@ -15,8 +15,9 @@ public struct PersonGridView: View {
     public var body: some View {
         VStack(alignment: .leading) {
             Button(action: action) {
-                AsyncImage(
+                CachedAsyncImage(
                     url: entity.picture,
+                    urlCache: .imageCache,
                     content: { image in
                         image
                             .resizable()

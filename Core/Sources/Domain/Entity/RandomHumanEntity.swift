@@ -6,13 +6,12 @@ struct RandomHumanEntity {
 }
 
 // MARK: - HumanResultEntity
-public struct HumanResultEntity: Equatable, Identifiable {
+public struct HumanResultEntity: Equatable, Hashable, Identifiable {
     public let gender: GenderEntity
     public let name: String
     public let location: String
     public let email: String
     public let userName: String
-    public let dob, registered: DobEntity
     public let phone, cell: String
     public let id: String
     public let picture: URL?

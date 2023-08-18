@@ -15,8 +15,9 @@ public struct PersonCellView: View {
     public var body: some View {
         HStack {
             Button(action: action) {
-                AsyncImage(
+                CachedAsyncImage(
                     url: entity.picture,
+                    urlCache: .imageCache,
                     content: { image in
                         image
                             .resizable()
@@ -32,6 +33,7 @@ public struct PersonCellView: View {
                     }
                 )
             }
+            .padding(.leading, 16)
 
             VStack(alignment: .leading) {
                 Text(entity.name)
@@ -44,6 +46,8 @@ public struct PersonCellView: View {
                     .font(.system(size: 14, weight: .regular, design: .default))
             }
             .padding(.leading, 10)
+
+            Spacer()
         }
     }
 }
