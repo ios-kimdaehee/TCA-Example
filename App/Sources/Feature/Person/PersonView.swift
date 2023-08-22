@@ -42,6 +42,7 @@ public struct PersonView: View {
                                 PersonCellView(entity: result) {
                                     viewStore.send(.setDetailPicture(pictureURL: result.picture))
                                 }
+                                .onAppear { viewStore.send(.loadMoreContent(result)) }
                                 .onTapGesture {}
                                 .onLongPressGesture { viewStore.send(.longTapCell(result)) }
                             }
@@ -57,6 +58,7 @@ public struct PersonView: View {
                                 PersonGridView(entity: result) {
                                     viewStore.send(.setDetailPicture(pictureURL: result.picture))
                                 }
+                                .onAppear { viewStore.send(.loadMoreContent(result)) }
                                 .onTapGesture {}
                                 .onLongPressGesture { viewStore.send(.longTapCell(result)) }
                             }

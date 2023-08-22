@@ -29,6 +29,7 @@ public struct Person: Reducer {
         case setDetailPicture(pictureURL: URL?)
         case longTapCell(HumanResultEntity)
         case personListResponse(TaskResult<[HumanResultEntity]>)
+        case loadMoreContent(HumanResultEntity)
         case personDetail(PresentationAction<PersonDetail.Action>)
         case alert(PresentationAction<Alert>)
 
@@ -72,6 +73,17 @@ public struct Person: Reducer {
                     state.personDetail = PersonDetail.State(pictureURL: state.pictueURL)
                     return .none
 
+                case .loadMoreContent(let entity):
+                    let thresholdIndex = state.humanResult.index(state.humanResult.endIndex, offsetBy: -1)
+                    if thresholdIndex == state.humanResult.firstIndex(of: entity) {
+                        state.page += 1
+                        return .run { send in
+                            await send(.onAppear)
+                        }
+                    } else {
+                        return .none
+                    }
+
                 case .longTapCell(let entity):
                     print(entity)
                     state.alert = AlertState {
@@ -96,7 +108,7 @@ public struct Person: Reducer {
                     return .cancel(id: CancelID.load)
 
                 case .personListResponse(.success(let response)):
-                    state.humanResult = response
+                    state.humanResult.append(contentsOf: response)
                     return .none
 
                 default:
